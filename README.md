@@ -1,0 +1,319 @@
+[index.html](https://github.com/user-attachments/files/24486004/index.html)
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roobet Affiliate Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+
+        body {
+            background-color: #0d1117;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .roobet-gradient {
+            background: linear-gradient(135deg, #ffb800 0%, #ff8a00 100%);
+        }
+
+        .card-bg {
+            background: #161b22;
+            border: 1px solid #30363d;
+        }
+
+        .row-anim {
+            transition: all 0.2s ease;
+        }
+
+        .gemini-glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-4xl font-extrabold tracking-tight">
+                    <span class="text-yellow-500">ROOBET</span> LEADERBOARD
+                </h1>
+                <p class="text-gray-400 italic font-medium tracking-wide">Live Affiliate Stats & AI Insights</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleConfig()" class="bg-gray-800 hover:bg-gray-700 border border-gray-600 px-4 py-2 rounded-lg text-sm transition">
+                    <i class="fas fa-cog mr-2"></i>Setup
+                </button>
+                <div id="status-container" class="flex items-center gap-2 bg-gray-900 px-4 py-2 rounded-lg text-sm border border-gray-800">
+                    <div id="status-dot" class="h-2 w-2 rounded-full bg-gray-600"></div>
+                    <span id="status-text" class="text-xs font-mono uppercase">Offline</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- API Config Area -->
+        <div id="config-panel" class="mb-8 card-bg p-6 rounded-xl hidden">
+            <h2 class="text-xl font-bold mb-4 text-yellow-500">Konfiguration</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1 uppercase">Roobet API Key</label>
+                    <input type="password" id="api-key" placeholder="Affiliate API Key" class="w-full bg-gray-900 border border-gray-700 rounded p-3 focus:outline-none focus:border-yellow-500 text-white text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1 uppercase">Gemini AI Key (Optional)</label>
+                    <input type="password" id="gemini-key" placeholder="AI Key für Shoutouts" class="w-full bg-gray-900 border border-gray-700 rounded p-3 focus:outline-none focus:border-blue-500 text-white text-sm">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="saveConfig()" class="roobet-gradient text-black font-bold px-8 py-2 rounded shadow-lg hover:brightness-110 transition uppercase text-sm">
+                    Verbinden
+                </button>
+                <button onclick="clearConfig()" class="text-gray-500 hover:text-red-500 transition text-sm">
+                    Daten löschen
+                </button>
+            </div>
+        </div>
+
+        <!-- Gemini AI Insight Section -->
+        <div id="ai-insight-container" class="mb-8 card-bg p-5 rounded-xl gemini-glow hidden">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-blue-400 text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                    <i class="fas fa-brain"></i> Gemini AI Analyse
+                </span>
+                <span class="text-[10px] text-gray-500">KI generierter Hype</span>
+            </div>
+            <p id="ai-text" class="text-sm text-blue-50 text-opacity-90 leading-relaxed italic">
+                Warte auf Daten für die KI-Analyse...
+            </p>
+        </div>
+
+        <!-- Podium Section -->
+        <div id="podium" class="grid grid-cols-3 gap-4 mb-8 items-end text-center h-44">
+            <div class="flex flex-col items-center">
+                <div id="p2-name" class="text-xs font-bold truncate w-full mb-2 text-gray-400">-</div>
+                <div class="bg-gray-800/40 w-full h-24 rounded-t-xl flex items-center justify-center text-3xl font-black border-t-2 border-gray-500">2</div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div id="p1-name" class="text-sm font-black text-yellow-500 truncate w-full mb-2">-</div>
+                <div class="roobet-gradient w-full h-32 rounded-t-xl flex items-center justify-center text-5xl font-black text-black border-t-2 border-yellow-200 shadow-2xl">1</div>
+            </div>
+            <div class="flex flex-col items-center">
+                <div id="p3-name" class="text-xs font-bold truncate w-full mb-2 text-orange-600">-</div>
+                <div class="bg-orange-950/10 w-full h-16 rounded-t-xl flex items-center justify-center text-2xl font-black border-t-2 border-orange-900">3</div>
+            </div>
+        </div>
+
+        <!-- Main Leaderboard -->
+        <div class="card-bg rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
+            <div class="grid grid-cols-12 gap-2 p-5 bg-gray-800/30 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border-b border-gray-800">
+                <div class="col-span-1">#</div>
+                <div class="col-span-7">User</div>
+                <div class="col-span-4 text-right">Wagered (USD)</div>
+            </div>
+            <div id="leaderboard-body" class="divide-y divide-gray-800/50">
+                <div class="p-16 text-center text-gray-600 text-sm">
+                    <i class="fas fa-circle-notch animate-spin mb-3 block text-2xl text-gray-700"></i>
+                    Initialisiere Stream-Daten...
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Tool -->
+        <div class="mt-6 flex gap-3">
+             <button onclick="copyChatSummary()" class="flex-1 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 p-4 rounded-xl text-blue-400 text-sm font-bold flex items-center justify-center gap-3 transition">
+                <i class="fas fa-comment-dots"></i> Kick-Chat Summary kopieren
+            </button>
+        </div>
+
+        <!-- Debug Log -->
+        <div id="error-log" class="mt-4 text-red-500 text-[10px] hidden p-4 bg-red-950/20 border border-red-900/50 rounded-lg font-mono leading-relaxed"></div>
+
+        <footer class="mt-10 flex justify-between items-center text-gray-700 text-[10px] font-bold uppercase tracking-widest">
+            <span>Update alle 60 Sek</span>
+            <span>Roobet Live Overlay v2.1</span>
+        </footer>
+    </div>
+
+    <script>
+        let players = [];
+        let isFetching = false;
+
+        function toggleConfig() {
+            const panel = document.getElementById('config-panel');
+            panel.classList.toggle('hidden');
+        }
+
+        function saveConfig() {
+            const rbKey = document.getElementById('api-key').value.trim();
+            const gmKey = document.getElementById('gemini-key').value.trim();
+            if(rbKey) localStorage.setItem('roobet_api_key_v2', rbKey);
+            if(gmKey) localStorage.setItem('gemini_api_key', gmKey);
+            showError("");
+            toggleConfig();
+            fetchData();
+        }
+
+        function clearConfig() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        function showError(msg) {
+            const errDiv = document.getElementById('error-log');
+            if(msg) {
+                errDiv.innerHTML = "<strong>CRITICAL ERROR:</strong><br>" + msg;
+                errDiv.classList.remove('hidden');
+            } else {
+                errDiv.classList.add('hidden');
+            }
+        }
+
+        function setStatus(type, msg) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            if(type === 'loading') {
+                dot.className = "h-2 w-2 rounded-full bg-yellow-500 animate-pulse";
+                text.innerText = msg || "Lade...";
+            } else if(type === 'success') {
+                dot.className = "h-2 w-2 rounded-full bg-green-500";
+                text.innerText = "Live";
+            } else {
+                dot.className = "h-2 w-2 rounded-full bg-red-500";
+                text.innerText = "Error";
+            }
+        }
+
+        async function fetchData() {
+            if (isFetching) return;
+            const rbKey = localStorage.getItem('roobet_api_key_v2');
+            if(!rbKey) return;
+
+            isFetching = true;
+            setStatus('loading', 'API Call...');
+
+            // Wir versuchen verschiedene Strategien
+            const target = `https://api.roobet.com/affiliate/stats?key=${rbKey}`;
+            const proxyPool = [
+                `https://api.allorigins.win/get?url=${encodeURIComponent(target)}`,
+                `https://corsproxy.io/?${encodeURIComponent(target)}`,
+                `https://thingproxy.freeboard.io/fetch/${target}`
+            ];
+
+            let success = false;
+            let lastErr = "";
+
+            for (let url of proxyPool) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) continue;
+
+                    const raw = await response.json();
+                    let content = raw.contents || raw; // Manche Proxys wrappen das Ergebnis
+                    let data = typeof content === 'string' ? JSON.parse(content) : content;
+
+                    if(data && data.referrals) {
+                        players = data.referrals.map(ref => ({
+                            username: ref.username || ref.userId || "Ghost",
+                            wagered: parseFloat(ref.wagered || 0)
+                        }));
+                        renderLeaderboard();
+                        setStatus('success');
+                        if(localStorage.getItem('gemini_api_key')) generateAIInsight();
+                        success = true;
+                        break;
+                    }
+                } catch (e) {
+                    lastErr = e.message;
+                }
+            }
+
+            if(!success) {
+                showError("Alle Proxy-Versuche gescheitert. Roobet blockiert die Anfrage. Tipp: Installiere die Chrome-Erweiterung 'Allow CORS'.");
+                setStatus('error');
+            }
+            isFetching = false;
+        }
+
+        async function generateAIInsight() {
+            const key = localStorage.getItem('gemini_api_key');
+            if(!key || players.length === 0) return;
+
+            const aiBox = document.getElementById('ai-insight-container');
+            const aiText = document.getElementById('ai-text');
+            aiBox.classList.remove('hidden');
+
+            const top = players.slice(0, 3).map(p => p.username).join(", ");
+            const prompt = `Du bist ein energiegeladener Casino-Streamer. Hier sind die Top-Spieler: ${top}. Schreib einen kurzen, motivierenden Shoutout (1 Satz) auf Deutsch. Benutze Begriffe wie 'Wager', 'Luck' oder 'To the moon'.`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+                const json = await res.json();
+                const quote = json.candidates?.[0]?.content?.parts?.[0]?.text;
+                if(quote) aiText.innerText = quote.trim();
+            } catch (e) {
+                aiText.innerText = "KI schläft gerade...";
+            }
+        }
+
+        function renderLeaderboard() {
+            const body = document.getElementById('leaderboard-body');
+            const sorted = [...players].sort((a, b) => b.wagered - a.wagered);
+
+            document.getElementById('p1-name').innerText = sorted[0]?.username || '-';
+            document.getElementById('p2-name').innerText = sorted[1]?.username || '-';
+            document.getElementById('p3-name').innerText = sorted[2]?.username || '-';
+
+            if(sorted.length === 0) {
+                body.innerHTML = '<div class="p-16 text-center text-gray-600 italic">Keine Daten gefunden.</div>';
+                return;
+            }
+
+            body.innerHTML = '';
+            sorted.forEach((p, i) => {
+                const rank = i + 1;
+                const row = document.createElement('div');
+                row.className = `grid grid-cols-12 gap-2 p-5 items-center row-anim ${rank === 1 ? 'bg-yellow-500/5' : ''}`;
+                row.innerHTML = `
+                    <div class="col-span-1 font-black ${rank <= 3 ? 'text-yellow-500' : 'text-gray-700'}">${rank}</div>
+                    <div class="col-span-7 flex items-center gap-3">
+                        <span class="font-bold tracking-tight">${p.username}</span>
+                    </div>
+                    <div class="col-span-4 text-right font-mono font-bold text-green-400">
+                        $${p.wagered.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                    </div>
+                `;
+                body.appendChild(row);
+            });
+        }
+
+        async function copyChatSummary() {
+            const summary = `🏆 Roobet Top 3: 1. ${players[0]?.username || '-'} | 2. ${players[1]?.username || '-'} | 3. ${players[2]?.username || '-'}`;
+            const el = document.createElement('textarea');
+            el.value = summary;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert("Kopiert für den Chat!");
+        }
+
+        window.onload = () => {
+            if(localStorage.getItem('roobet_api_key_v2')) {
+                document.getElementById('api-key').value = "********";
+                fetchData();
+            }
+            setInterval(fetchData, 60000);
+        };
+    </script>
+</body>
+</html>
